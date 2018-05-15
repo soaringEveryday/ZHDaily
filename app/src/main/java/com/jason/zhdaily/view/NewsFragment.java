@@ -28,9 +28,9 @@ public class NewsFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mNewsId = getArguments().getString(KEY_ID);
+            mNewsId = String.valueOf(getArguments().getInt(KEY_ID));
         }
-
+        setBackVisible();
     }
 
     @Nullable
@@ -39,6 +39,11 @@ public class NewsFragment extends BaseFragment {
         View rootView = inflater.inflate(R.layout.activity_news, container, false);
         mWeb = rootView.findViewById(R.id.webview);
         settingWebView(mWeb);
+        requestNewsDetail();
+        return rootView;
+    }
+
+    private void requestNewsDetail() {
         Api.getApiService().getNews(mNewsId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -64,7 +69,6 @@ public class NewsFragment extends BaseFragment {
 
                     }
                 });
-        return rootView;
     }
 
     private void settingWebView(WebView webview) {

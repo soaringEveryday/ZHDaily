@@ -20,12 +20,20 @@ public abstract class CommonAdapter<T> extends RecyclerView.Adapter<CommonAdapte
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(mItemLayoutId, parent, false);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int position = (int) view.getTag();
+                itemClick(view, mDataSet.get(position), position);
+            }
+        });
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         convert(holder, mDataSet.get(position), position);
+        holder.itemView.setTag(position);// save click position
     }
 
     @Override
@@ -41,4 +49,6 @@ public abstract class CommonAdapter<T> extends RecyclerView.Adapter<CommonAdapte
     }
 
     public abstract void convert(ViewHolder helper, T item, int position);
+
+    public abstract void itemClick(View view, T item, int position);
 }

@@ -1,5 +1,6 @@
 package com.jason.zhdaily.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -15,9 +16,9 @@ import com.bumptech.glide.Glide;
 import com.jason.zhdaily.CustomApplication;
 import com.jason.zhdaily.R;
 import com.jason.zhdaily.common.CommonAdapter;
+import com.jason.zhdaily.common.CommonBannerAdapter;
 import com.jason.zhdaily.domain.Latest;
 import com.jason.zhdaily.network.Api;
-import com.jason.zhdaily.common.CommonPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.jason.zhdaily.view.NewsFragment.KEY_ID;
+
 public class LatestFragment extends BaseFragment {
 
     protected RecyclerView mRecyclerView;
@@ -35,7 +38,7 @@ public class LatestFragment extends BaseFragment {
     protected List<Latest.StoriesBean> mLatestStoryData = new ArrayList<>();
     protected List<Latest.TopStoriesBean> mLatestTopData = new ArrayList<>();
     protected ViewPager mBanner = null;
-    protected CommonPagerAdapter mCommonPagerAdapter;
+    protected CommonBannerAdapter mCommonPagerAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,7 +47,7 @@ public class LatestFragment extends BaseFragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_latest, container, false);
         mRecyclerView = rootView.findViewById(R.id.rv_latest);
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -56,6 +59,16 @@ public class LatestFragment extends BaseFragment {
                 TextView title = helper.itemView.findViewById(R.id.tv_item_latest_title);
                 Glide.with(CustomApplication.getContext()).load(item.getImages().get(0)).into(image);
                 title.setText(item.getTitle());
+            }
+
+            @Override
+            public void itemClick(View view, Latest.StoriesBean item, int position) {
+                Latest.StoriesBean story = mLatestStoryData.get(position);
+                if (story != null) {
+                    Intent intent = new Intent(getActivity(), NewsActivity.class);
+                    intent.putExtra(KEY_ID, story.getId());
+                    startActivity(intent);
+                }
             }
         };
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -98,8 +111,7 @@ public class LatestFragment extends BaseFragment {
     }
 
     private void updateBanner() {
-        mBanner.setCurrentItem(0);
-        mCommonPagerAdapter = new CommonPagerAdapter<Latest.TopStoriesBean>(mLatestTopData, R.layout.item_banner, CustomApplication.getContext()) {
+        mCommonPagerAdapter = new CommonBannerAdapter<Latest.TopStoriesBean>(mLatestTopData, R.layout.item_banner, CustomApplication.getContext()) {
             @Override
             protected void convert(View view, Latest.TopStoriesBean item, int position) {
                 if (item != null) {
@@ -107,6 +119,16 @@ public class LatestFragment extends BaseFragment {
                     ImageView image = view.findViewById(R.id.iv_item_banner_image);
                     Glide.with(CustomApplication.getContext()).load(item.getImage()).into(image);
                     title.setText(item.getTitle());
+                }
+            }
+
+            @Override
+            protected void itemClick(View view, Latest.TopStoriesBean topStoriesBean, int position) {
+                Latest.TopStoriesBean story = mLatestTopData.get(position);
+                if (story != null) {
+                    Intent intent = new Intent(getActivity(), NewsActivity.class);
+                    intent.putExtra(KEY_ID, story.getId());
+                    startActivity(intent);
                 }
             }
         };
