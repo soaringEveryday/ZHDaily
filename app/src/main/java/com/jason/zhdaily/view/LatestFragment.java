@@ -3,6 +3,7 @@ package com.jason.zhdaily.view;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,14 +20,18 @@ import com.jason.zhdaily.common.CommonAdapter;
 import com.jason.zhdaily.common.CommonBannerAdapter;
 import com.jason.zhdaily.common.HeaderWrapper;
 import com.jason.zhdaily.domain.Latest;
+import com.jason.zhdaily.domain.StoryExtra;
 import com.jason.zhdaily.network.Api;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.jason.zhdaily.view.NewsFragment.KEY_ID;
@@ -41,6 +46,7 @@ public class LatestFragment extends BaseFragment {
     protected List<Latest.TopStoriesBean> mLatestTopData = new ArrayList<>();
     protected ViewPager mBanner = null;
     protected CommonBannerAdapter mCommonPagerAdapter;
+    protected SparseArrayCompat<StoryExtra> mExtras = new SparseArrayCompat<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -143,6 +149,63 @@ public class LatestFragment extends BaseFragment {
 
         mHeaderAdapter.addHeaderView(bannerView);
         mHeaderAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        test();
+    }
+
+    private void test() {
+
+        Api.getApiService().getLatest()
+                .flatMap(new Function<Latest, ObservableSource<List<Latest.StoriesBean>>>() {
+                    @Override
+                    public ObservableSource<List<Latest.StoriesBean>> apply(Latest latest) {
+                        mLatestStoryData.addAll(latest.getStories());
+                        return Observable.fromArray(latest.getStories());
+                    }
+                })
+                .flatMap(new Function<List<Latest.StoriesBean>, ObservableSource<Latest.StoriesBean>>() {
+                    @Override
+                    public ObservableSource<Latest.StoriesBean> apply(List<Latest.StoriesBean> storiesBeans) {
+                        return Observable.fromIterable(storiesBeans);
+                    }
+                })
+                .flatMap(new Function<Latest.StoriesBean, Observable<StoryExtra>>() {
+                    @Override
+                    public Observable<StoryExtra> apply(Latest.StoriesBean storiesBean) {
+                        return Api.getApiService().getStoryExtra(String.valueOf(storiesBean.getId()));
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<StoryExtra>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        addDisposable(d);
+                    }
+
+                    @Override
+                    public void onNext(StoryExtra storyExtra) {
+
+                        if (storyExtra != null) {
+                            mExtras.append(0, storyExtra);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        System.out.print("finished");
+                    }
+                });
+
     }
 
 }
