@@ -17,6 +17,7 @@ import com.jason.zhdaily.CustomApplication;
 import com.jason.zhdaily.R;
 import com.jason.zhdaily.common.CommonAdapter;
 import com.jason.zhdaily.common.CommonBannerAdapter;
+import com.jason.zhdaily.common.HeaderWrapper;
 import com.jason.zhdaily.domain.Latest;
 import com.jason.zhdaily.network.Api;
 
@@ -35,6 +36,7 @@ public class LatestFragment extends BaseFragment {
     protected RecyclerView mRecyclerView;
     protected CommonAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
+    protected HeaderWrapper mHeaderAdapter;
     protected List<Latest.StoriesBean> mLatestStoryData = new ArrayList<>();
     protected List<Latest.TopStoriesBean> mLatestTopData = new ArrayList<>();
     protected ViewPager mBanner = null;
@@ -71,11 +73,12 @@ public class LatestFragment extends BaseFragment {
                 }
             }
         };
+        mHeaderAdapter = new HeaderWrapper(mAdapter);
+
         mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setAdapter(mHeaderAdapter);
         requestLatestNews();
 
-        mBanner = rootView.findViewById(R.id.vp_banner);
         return rootView;
     }
 
@@ -92,7 +95,7 @@ public class LatestFragment extends BaseFragment {
                     @Override
                     public void onNext(Latest latest) {
                         mLatestStoryData.addAll(latest.getStories());
-                        mAdapter.notifyDataSetChanged();
+                        mHeaderAdapter.notifyDataSetChanged();
                         mLatestTopData.addAll(latest.getTop_stories());
                         updateBanner();
                     }
@@ -111,6 +114,10 @@ public class LatestFragment extends BaseFragment {
     }
 
     private void updateBanner() {
+
+
+        View bannerView = LayoutInflater.from(getContext()).inflate(R.layout.include_banner, null, false);
+        mBanner = bannerView.findViewById(R.id.vp_banner);
         mCommonPagerAdapter = new CommonBannerAdapter<Latest.TopStoriesBean>(mLatestTopData, R.layout.item_banner, CustomApplication.getContext()) {
             @Override
             protected void convert(View view, Latest.TopStoriesBean item, int position) {
@@ -134,5 +141,8 @@ public class LatestFragment extends BaseFragment {
         };
         mBanner.setAdapter(mCommonPagerAdapter);
 
+        mHeaderAdapter.addHeaderView(bannerView);
+        mHeaderAdapter.notifyDataSetChanged();
     }
+
 }

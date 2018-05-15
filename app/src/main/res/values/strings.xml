@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">ZHDaily</string>
-    <string name="menu_login">登录</string>
+    <string name="app_name">每日知乎</string>
+    <string name="menu_login">过往</string>
 </resources>
