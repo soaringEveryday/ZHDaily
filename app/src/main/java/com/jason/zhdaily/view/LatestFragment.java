@@ -22,6 +22,7 @@ import com.jason.zhdaily.common.HeaderWrapper;
 import com.jason.zhdaily.domain.Latest;
 import com.jason.zhdaily.domain.StoryExtra;
 import com.jason.zhdaily.network.Api;
+import com.jason.zhdaily.network.ApiServiceWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,33 +90,59 @@ public class LatestFragment extends BaseFragment {
     }
 
     private void requestLatestNews() {
-        Api.getApiService().getLatest()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Latest>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        addDisposable(d);
-                    }
+//        Api.getApiService().getLatest()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<Latest>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                        addDisposable(d);
+//                    }
+//
+//                    @Override
+//                    public void onNext(Latest latest) {
+//                        mLatestStoryData.addAll(latest.getStories());
+//                        mHeaderAdapter.notifyDataSetChanged();
+//                        mLatestTopData.addAll(latest.getTop_stories());
+//                        updateBanner();
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//
+//                    }
+//                });
 
-                    @Override
-                    public void onNext(Latest latest) {
-                        mLatestStoryData.addAll(latest.getStories());
-                        mHeaderAdapter.notifyDataSetChanged();
-                        mLatestTopData.addAll(latest.getTop_stories());
-                        updateBanner();
-                    }
 
-                    @Override
-                    public void onError(Throwable e) {
+        ApiServiceWrapper.getInstance().getLatest().subscribe(new Observer<Latest>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                addDisposable(d);
+            }
 
-                    }
+            @Override
+            public void onNext(Latest latest) {
+                mLatestStoryData.addAll(latest.getStories());
+                mHeaderAdapter.notifyDataSetChanged();
+                mLatestTopData.addAll(latest.getTop_stories());
+                updateBanner();
+            }
 
-                    @Override
-                    public void onComplete() {
+            @Override
+            public void onError(Throwable e) {
 
-                    }
-                });
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
 
     }
 
